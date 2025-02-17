@@ -21,11 +21,12 @@ const setupChromium = async () => {
   const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
+      args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],
       headless: true,
-      executablePath: executablePath || undefined,
-      args: chromium.args,
+      executablePath: await chromium.executablePath || '/usr/bin/chromium-browser',
     }
   });
+  
 
   let qrCodeData = ''; // لتخزين رمز QR
 
