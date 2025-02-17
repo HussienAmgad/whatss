@@ -10,12 +10,11 @@ app.use(express.json());
 const wss = new WebSocket.Server({ noServer: true });
 
 const setupChromium = async () => {
-  return await chromium.executablePath;
+  return await chromium.executablePath || '/usr/bin/chromium-browser';
 };
 
 (async () => {
-
-  const executablePath = await chromium.executablePath;
+  const executablePath = await setupChromium();
 
   // إنشاء عميل WhatsApp
   const client = new Client({
@@ -23,10 +22,9 @@ const setupChromium = async () => {
     puppeteer: {
       args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],
       headless: true,
-      executablePath: await chromium.executablePath || '/usr/bin/chromium-browser',
+      executablePath: executablePath,
     }
   });
-  
 
   let qrCodeData = ''; // لتخزين رمز QR
 
@@ -39,11 +37,9 @@ const setupChromium = async () => {
       }
     });
   });
-  
 
   // حدث عند اكتمال الاتصال وجاهزية العميل
   client.on('ready', () => {
-    
     console.log('Client is ready!');
     wss.clients.forEach(client => {
       if (client.readyState === WebSocket.OPEN) {
@@ -70,8 +66,6 @@ const setupChromium = async () => {
       res.status(404).send('QR code not available yet.');
     }
   });
-  
-
 
   // إرسال رسالة إلى أرقام متعددة
   app.post('/send-messages', async (req, res) => {
